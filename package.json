@@ -20,6 +20,8 @@
     "@tensorflow/tfjs": "^4.20.0",
     "@tensorflow/tfjs-node": "^4.20.0",
     "@tensorflow/tfjs-vis": "^1.1.0",
+    "@types/chart.js": "^2.9.41",
+    "chart.js": "^4.4.7",
     "dat.gui": "^0.7.9",
     "dmn-js": "^14.7.1",
     "dmn-moddle": "^10.0.0",
