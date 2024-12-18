@@ -18,7 +18,7 @@ declare const DmnModdle: any;
 declare const Fuse: any;
 declare const tfvis: any;
 declare const tippy: any;
-import "./modal.js"
+import "./modal.js";
 import {
   _DMiNer_,
   Data,
@@ -53,9 +53,9 @@ import {
 import Dataviz from "./Dataviz.js";
 import Decision_maker from "./Decision_maker.js";
 import FEEL from "./FEEL.js";
-import { updateDAS_File } from "./funcs.js";
 import IMICROS_FEEL_interpreter from "./IMICROS_FEEL_interpreter.js";
-import { getCurrentData, updateSystemData } from "./initialData.js";
+import { ItemType, updateSystemData } from "./initialData.js";
+import { setModalType, toggleModal } from "./modal.js";
 
 export default class DMN_diagram {
   private static readonly _Menu =
@@ -560,16 +560,19 @@ export default class DMN_diagram {
       let data: Data | null = null;
       try {
         const newUpdatedData: string = DMN_diagram.File_reader.result as string;
-        const formattedData = JSON.parse(newUpdatedData);
+        const formattedData: {
+          status: string;
+          data: ItemType[];
+        } = JSON.parse(newUpdatedData);
         // window.alert(newUpdatedData);
-        updateSystemData(formattedData);
-        updateDAS_File();
-        data = formattedData;
+        updateSystemData(formattedData.data);
+        data = JSON.parse(newUpdatedData);
         // if (Trace)
         //     console.assert(data !== null, "'DMN_diagram.File_reader.onload' >> 'data !== null', untrue.");
         // If no exception occurred then data is true JSON... Check format:
         if (Is_Data(data!)) {
           const decision: DMN_Decision = DMN_diagram._Decision!;
+
           // if (Trace) // Decision maker:
           //     console.assert(DMN_diagram.Decisions.get(DMN_diagram._Decision!) !== undefined, "'DMN_diagram.File_reader.onload' >> 'DMN_diagram.Decisions.get(DMN_diagram._Decision!) !== undefined', untrue.");
           const decision_maker: Decision_maker =
@@ -805,7 +808,6 @@ export default class DMN_diagram {
         }) === false
     )
       return Promise.resolve(undefined); // DMN processing causes trouble(s)...
-
     const dataviz = this._dataviz;
     diagram.drgElement
       .filter(Is_DMN_Decision)
@@ -906,22 +908,25 @@ export default class DMN_diagram {
                 // if (Trace)
                 //     console.assert(dataviz_button !== null, "'dataviz_button !== null', untrue");
                 dataviz_button.onclick = () => {
-                  DMN_diagram._Randomize_data(decision)
-                    .then((data) => {
-                      decision;
-                      Dataviz.Setup(
-                        dataviz,
-                        data,
-                        DMN_diagram.Decisions.get(decision)!.name,
-                        DMN_diagram.Decisions.get(decision)!.features,
-                        DMN_diagram.Decisions.get(decision)!.types,
-                        DMN_diagram.Decisions.get(decision)!.enumerations
-                      );
-                    })
-                    .catch((error) => DMN_diagram._Display_error(error))
-                    .finally(() =>
-                      sVG_element.dispatchEvent(new Event("click"))
-                    );
+                  toggleModal(true);
+                  setModalType("show-data-type-button");
+
+                  // DMN_diagram._Randomize_data(decision)
+                  //   .then((data) => {
+                  //     decision;
+                  //     Dataviz.Setup(
+                  //       dataviz,
+                  //       data,
+                  //       DMN_diagram.Decisions.get(decision)!.name,
+                  //       DMN_diagram.Decisions.get(decision)!.features,
+                  //       DMN_diagram.Decisions.get(decision)!.types,
+                  //       DMN_diagram.Decisions.get(decision)!.enumerations
+                  //     );
+                  //   })
+                  //   .catch((error) => DMN_diagram._Display_error(error))
+                  //   .finally(() =>
+                  //     sVG_element.dispatchEvent(new Event("click"))
+                  //   );
                 };
                 const spade: HTMLButtonElement = window.document.getElementById(
                   "spade"
@@ -943,6 +948,10 @@ export default class DMN_diagram {
                 event.isTrusted &&
                 DMN_diagram._Is_idle_(decision))
             ) {
+              // if(decision==="")
+              // toggleModal(true);
+              // setModalType("display-table");
+
               DMN_diagram._Set_CSS_class(decision);
             }
           },

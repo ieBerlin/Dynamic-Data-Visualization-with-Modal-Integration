@@ -227,7 +227,7 @@
         </outputEntry>
       </rule>
       <rule id="DecisionRule_0z903km">
-        <description>https://devblogs.microsoft.com/typescript/announcing-typescript-5-0</description>
+        <description>gdfgdf https://devblogs.microsoft.com/typescript/announcing-typescript-5-0</description>
         <inputEntry id="UnaryTests_1c788f9">
           <text>"TypeScript"</text>
         </inputEntry>

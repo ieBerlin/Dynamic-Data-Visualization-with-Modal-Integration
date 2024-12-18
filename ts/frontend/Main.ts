@@ -4,12 +4,14 @@
 // import Decision_maker from "./Decision_maker";
 
 /** End of webpack */
+
 declare const dat: any;
 declare const DmnJS: any;
 import { Trace } from "../common/Settings.js";
 import Decision_maker from "./Decision_maker.js";
 import DMN_diagram from "./DMN_diagram.js";
-import initialData from "./initialData.js";
+import { getCurrentData } from "./initialData.js";
+import "./xmlData.js"
 class DMiNer {
   static readonly Disable_drag_and_drop = (): void => {
     // 'preventDefault' in 'dragover' is MANDATORY to later control 'drop':
@@ -48,6 +50,7 @@ class DMiNer {
           "file_name" in window.history.state,
           "'DMiNer.File_reader.onload' >> '\"file_name\" in window.history.state', untrue."
         );
+
       DMiNer.Test_case(
         window.history.state.file_name,
         DMiNer.File_reader.result as string
@@ -158,28 +161,24 @@ window.addEventListener("DOMContentLoaded", async (_) => {
   const collection: HTMLCollection =
     window.document.getElementsByClassName("TC");
   collection.item(0)!.addEventListener("click", (event) => {
-    console.log("clicked");
-    DMiNer.Test_case(
-      "./TEST_CASES/Developer_annual_salary/Developer_annual_salary.dmn"
-    );
+    // DMiNer.Test_case(
+    //   "./TEST_CASES/Developer_annual_salary/Developer_annual_salary.dmn"
+    // );
     window.document.body.dispatchEvent(new Event(DMiNer.Reload));
   });
   collection.item(1)!.addEventListener("click", (event) => {
-    console.log("clicked");
     DMiNer.Test_case(
       "./TEST_CASES/Get_barcode_country/Get_barcode_country.dmn"
     );
     window.document.body.dispatchEvent(new Event(DMiNer.Reload));
   });
   collection.item(2)!.addEventListener("click", (event) => {
-    console.log("clicked");
     DMiNer.Test_case(
       "./TEST_CASES/Trisotech/Car_Damage_Responsibility/Car Damage Responsibility.dmn"
     );
     window.document.body.dispatchEvent(new Event(DMiNer.Reload));
   });
   collection.item(3)!.addEventListener("click", (event) => {
-    console.log("clicked");
     DMiNer.Test_case(
       "./TEST_CASES/Trisotech/Determine_the_Repair_Location/Determine the Repair Location.dmn"
     );
@@ -259,7 +258,7 @@ window.addEventListener("DOMContentLoaded", async (_) => {
   // file_content: await (new DMN_diagram("./TEST_CASES/TEST_interval.dmn", DMiNer.Viewer, DMiNer.DAT_GUI)).XML,
   // file_name: "./TEST_CASES/TEST_interval.dmn"
 
-  const p = initialData.data.map((z) => {
+  const p = getCurrentData().map((z) => {
     delete z["_DMiNer_ UNIQUE hit rule(s)"];
     return JSON.stringify(z);
   });

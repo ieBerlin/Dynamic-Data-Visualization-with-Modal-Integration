@@ -1,141 +1,289 @@
-import initialData, { ItemType } from "./initialData.js";
+import  {getCurrentData, ItemType } from "./initialData.js";
 import { setModalType } from "./modal.js";
 
-const modalContent = document.getElementById(
-  "main-modal-content"
-)! as HTMLDivElement;
-const canvas = document.getElementById("myCanvas") as HTMLCanvasElement;
-export function histogramRender() {
-  canvas.style.visibility = "visible";
-  modalContent.style.visibility = "hidden";
+const mainModalContent = document.getElementById(
+  "main-content"
+) as HTMLDivElement;
+export function lineChartRender() {
+  mainModalContent.innerHTML = "";
+  const canvas = document.createElement("canvas");
+  canvas.id = "myLineCanvas";
+  const buttonsWrapper = document.createElement("div");
+  buttonsWrapper.innerHTML = `<div style="text-align: center; ">
+                    <div style="text-align: center;">
+                        <button id="btnLineLanguage" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin: 0px 5px ;cursor: pointer;">
+                          Langage de programmation
+                        </button>
+                        <button id="btnLineVersion" style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 5px;margin: 0px 5px ; cursor: pointer;">
+                          Version
+                        </button>
+                        <button id="btnLineMedal" style="background-color: #f44336; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin: 0px 5px ; cursor: pointer;">
+                          Médaille
+                        </button>
+                    </div>
+                </div>`;
+  mainModalContent.appendChild(buttonsWrapper);
+  mainModalContent.appendChild(canvas);
 
-  const data: ItemType[] = initialData.data;
-  const versionsCount: number[] = [];
-  const programmingLanguageCount: { [key: string]: number } = {};
-  const medalCount: { [key: string]: number } = {};
-  const salaries = Array.from(
-    new Set(data.map((item) => item["Developer annual salary ($ US)"]))
-  ).sort((a, b) => a - b);
+  const data: ItemType[] = getCurrentData();
 
-  salaries.forEach((salary) => {
-    const salaryData = data.filter(
-      (item) => item["Developer annual salary ($ US)"] === salary
-    );
+  function updateLineChart(
+    labels: string[] | number[],
+    data: number[],
+    xAxisLabel: string,
+    yAxisLabel: string
+  ) {
+    const ctx = canvas.getContext("2d")!;
 
-    const versionSet = new Set(salaryData.map((item) => item.Version));
-    versionsCount.push(versionSet.size);
-
-    const languageSet = new Set(
-      salaryData.map((item) => item["Programming language"])
-    );
-    languageSet.forEach((language) => {
-      programmingLanguageCount[language] =
-        (programmingLanguageCount[language] || 0) + 1;
-    });
-
-    const medalSet = new Set(salaryData.map((item) => item["Developer medal"]));
-    medalSet.forEach((medal) => {
-      medalCount[medal] = (medalCount[medal] || 0) + 1;
-    });
-  });
-
-  const ctx = canvas.getContext("2d")!;
-
-  const updateChart = (
-    xLabels: (string | number)[],
-    yData: number[],
-    xTitle: string,
-    yTitle: string
-  ) => {
-    const myHistogram = new Chart(ctx, {
-      type: "bar",
+    return new Chart(ctx, {
+      type: "line",
       data: {
-        labels: xLabels,
+        labels: labels,
         datasets: [
           {
-            label: "Unique Count",
-            data: yData,
-            backgroundColor: "rgba(75, 192, 192, 0.2)",
-            borderColor: "rgba(75, 192, 192, 1)",
-            borderWidth: 1,
+            label: yAxisLabel,
+            data: data,
+            backgroundColor: "rgba(255, 99, 132, 0.2)",
+            borderColor: "rgba(255, 99, 132, 1)",
+            borderWidth: 2,
+            tension: 0.4,
+            fill: true,
           },
         ],
       },
       options: {
-        responsive: true, // Ensures the chart resizes with the canvas
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            enabled: true,
+          },
+        },
         scales: {
           x: {
             title: {
               display: true,
-              text: xTitle,
+              text: xAxisLabel,
             },
           },
           y: {
             beginAtZero: true,
             title: {
               display: true,
-              text: yTitle,
+              text: yAxisLabel,
             },
           },
         },
       },
     });
-    return myHistogram;
+  }
+
+  let myLineChart: { destroy: () => void };
+  const calculateAverage = (items: any[], category: string) => {
+    const uniqueCategories = [
+      ...new Set(items.map((item: { [x: string]: any }) => item[category])),
+    ];
+    return uniqueCategories.map((unique) => {
+      const filtered = items.filter(
+        (item: { [x: string]: unknown }) => item[category] === unique
+      );
+      const totalSalary = filtered.reduce(
+        (sum: any, item: { [x: string]: any }) =>
+          sum + item["Developer annual salary ($ US)"],
+        0
+      );
+      return totalSalary / filtered.length;
+    });
   };
 
-  let myHistogram = updateChart(
-    salaries,
-    versionsCount,
-    "Developer Annual Salary ($ US)",
-    "Number of Unique Versions"
-  );
+  document.getElementById("btnLineLanguage")?.addEventListener("click", () => {
+    const labels = [
+      ...new Set(data.map((item) => item["Programming language"])),
+    ];
+    const averages = calculateAverage(data, "Programming language");
 
-  const btnLanguage = document.getElementById("btnLanguage")!;
-  btnLanguage.addEventListener("click", () => {
-    const languageLabels = Object.keys(programmingLanguageCount);
-    const languageCounts = languageLabels.map(
-      (language) => programmingLanguageCount[language]
-    );
-    myHistogram.destroy(); // Destroy the old chart
-    myHistogram = updateChart(
-      languageLabels,
-      languageCounts,
-      "Programming Language",
-      "Number of Developers"
+    if (myLineChart) myLineChart.destroy();
+    myLineChart = updateLineChart(
+      labels,
+      averages,
+      "Langage de programmation",
+      "Salaire moyen ($ US)"
     );
   });
 
-  const btnVersion = document.getElementById("btnVersion")!;
-  btnVersion.addEventListener("click", () => {
-    myHistogram.destroy(); // Destroy the old chart
-    myHistogram = updateChart(
-      salaries,
-      versionsCount,
-      "Developer Annual Salary ($ US)",
-      "Number of Unique Versions"
+  document.getElementById("btnLineVersion")?.addEventListener("click", () => {
+    const labels = [...new Set(data.map((item) => item.Version))].sort(
+      (a, b) => a - b
+    );
+    const averages = calculateAverage(data, "Version");
+
+    if (myLineChart) myLineChart.destroy();
+    myLineChart = updateLineChart(
+      labels,
+      averages,
+      "Version",
+      "Salaire moyen ($ US)"
     );
   });
 
-  const btnMedal = document.getElementById("btnMedal")!;
-  btnMedal.addEventListener("click", () => {
-    const medalLabels = Object.keys(medalCount);
-    const medalCounts = medalLabels.map((medal) => medalCount[medal]);
-    myHistogram.destroy(); // Destroy the old chart
+  document.getElementById("btnLineMedal")?.addEventListener("click", () => {
+    const labels = [...new Set(data.map((item) => item["Developer medal"]))];
+    const averages = calculateAverage(data, "Developer medal");
+
+    if (myLineChart) myLineChart.destroy();
+    myLineChart = updateLineChart(
+      labels,
+      averages,
+      "Médaille",
+      "Salaire moyen ($ US)"
+    );
+  });
+}
+
+export function histogramRender() {
+  mainModalContent.innerHTML = "";
+  const canvas = document.createElement("canvas");
+  canvas.id = "myCanvas";
+  const buttonsWrapper = document.createElement("div");
+  buttonsWrapper.innerHTML = `<div style="text-align: center; margin-top: 20px;">
+                  <div style="text-align: center;">
+                      <button id="btnLanguage" style="background-color: #4CAF50; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin: 5px; cursor: pointer;">
+                        Langage de programmation
+                      </button>
+                      <button id="btnVersion" style="background-color: #008CBA; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin: 5px; cursor: pointer;">
+                        Version
+                      </button>
+                      <button id="btnMedal" style="background-color: #f44336; color: white; padding: 10px 20px; border: none; border-radius: 5px; margin: 5px; cursor: pointer;">
+                        Médaille
+                      </button>
+                  </div>
+  
+              </div>`;
+  mainModalContent.appendChild(buttonsWrapper);
+  mainModalContent.appendChild(canvas);
+
+  const data: ItemType[] = getCurrentData();
+
+  function updateChart(
+    labels: string[] | number[],
+    data: number[],
+    xAxisLabel: string,
+    yAxisLabel: string
+  ) {
+    const ctx = canvas.getContext("2d")!;
+
+    return new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: yAxisLabel,
+            data: data,
+            backgroundColor: "rgba(75, 192, 192, 0.6)",
+            borderColor: "rgba(75, 192, 192, 1)",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: false,
+          },
+          tooltip: {
+            enabled: true,
+          },
+        },
+        scales: {
+          x: {
+            title: {
+              display: true,
+              text: xAxisLabel,
+            },
+          },
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: yAxisLabel,
+            },
+          },
+        },
+      },
+    });
+  }
+
+  let myHistogram: { destroy: () => void };
+  const calculateAverage = (items: any[], category: string) => {
+    const uniqueCategories = [
+      ...new Set(items.map((item: { [x: string]: any }) => item[category])),
+    ];
+    return uniqueCategories.map((unique) => {
+      const filtered = items.filter(
+        (item: { [x: string]: unknown }) => item[category] === unique
+      );
+      const totalSalary = filtered.reduce(
+        (sum: any, item: { [x: string]: any }) =>
+          sum + item["Developer annual salary ($ US)"],
+        0
+      );
+      return totalSalary / filtered.length;
+    });
+  };
+  document.getElementById("btnLanguage")?.addEventListener("click", () => {
+    const labels = [
+      ...new Set(data.map((item) => item["Programming language"])),
+    ];
+    const averages = calculateAverage(data, "Programming language");
+
+    if (myHistogram) myHistogram.destroy();
     myHistogram = updateChart(
-      medalLabels,
-      medalCounts,
-      "Developer Medal",
-      "Number of Developers"
+      labels,
+      averages,
+      "Langage de programmation",
+      "Salaire moyen ($ US)"
+    );
+  });
+  document.getElementById("btnVersion")?.addEventListener("click", () => {
+    const labels = [...new Set(data.map((item) => item.Version))].sort(
+      (a, b) => a - b
+    );
+    const averages = calculateAverage(data, "Version");
+
+    if (myHistogram) myHistogram.destroy();
+    myHistogram = updateChart(
+      labels,
+      averages,
+      "Version",
+      "Salaire moyen ($ US)"
+    );
+  });
+
+  document.getElementById("btnMedal")?.addEventListener("click", () => {
+    const labels = [...new Set(data.map((item) => item["Developer medal"]))];
+    const averages = calculateAverage(data, "Developer medal");
+
+    if (myHistogram) myHistogram.destroy();
+    myHistogram = updateChart(
+      labels,
+      averages,
+      "Médaille",
+      "Salaire moyen ($ US)"
     );
   });
 }
 
 export function tableRender() {
-  modalContent.style.visibility = "visible";
+  mainModalContent.innerHTML = "";
+
   let tableRows = ""; // Initialize an empty string to accumulate rows
 
   // Assuming 'initialData' contains the data for the table
-  initialData.data.forEach((element: ItemType, index) => {
+  getCurrentData().forEach((element: ItemType, index) => {
     tableRows += `
           <td>${index + 1}</td>
           <td>${element["Programming language"]}</td>
@@ -147,7 +295,7 @@ export function tableRender() {
   });
 
   // Set the modal content with dynamically generated rows
-  modalContent.innerHTML = `
+  mainModalContent.innerHTML = `
         <div style="overflow: auto; font-family: Arial, sans-serif; border: 1px solid #ccc; padding: 10px;">
           <table border="1" style="overflow: auto; width: 100%; border-collapse: collapse; text-align: center;">
             <thead>
@@ -173,10 +321,9 @@ export function tableRender() {
 }
 
 export function buttonsRender() {
-  canvas.style.visibility = "hidden";
-  modalContent.style.visibility = "visible";
+  mainModalContent.innerHTML = "";
 
-  modalContent.innerHTML = `
+  mainModalContent.innerHTML = `
   <div style="display: flex; justify-content: center; gap: 20px; margin-top: 20px; align-items: center;">
     <button id="btnHistogram" style="background-color: #4CAF50; color: white; font-size: 18px; font-weight: bold; padding: 12px 24px; border: none; border-radius: 5px; cursor: pointer; transition: background-color 0.3s ease, transform 0.3s ease; height: auto;">
       HISTOGRAM
@@ -191,6 +338,6 @@ export function buttonsRender() {
     setModalType("tfjs-diagrams");
   });
   document.getElementById("btnCharts")!.addEventListener("click", () => {
-    setModalType("tfjs-diagrams");
+    setModalType("line-chart-diagram");
   });
 }

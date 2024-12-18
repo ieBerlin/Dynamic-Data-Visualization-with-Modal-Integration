@@ -1,19 +1,15 @@
-import { buttonsRender, histogramRender, tableRender, } from "./modal-contents.js";
+import { buttonsRender, histogramRender, lineChartRender, tableRender, } from "./modal-contents.js";
 const modal = document.getElementById("main-modal");
 export function toggleModal(value) {
     if (value) {
         modal.showModal();
     }
     else {
-        const modalContent = document.getElementById("main-modal-content");
-        const canvas = document.getElementById("myCanvas");
-        modalContent.style.visibility = "hidden";
-        canvas.style.visibility = "hidden";
+        const mainModalContent = document.getElementById("main-content");
+        mainModalContent.innerHTML = "";
         modal.close();
     }
 }
-setModalType("show-data-type-button");
-toggleModal(true);
 document
     .getElementById("main-modal-toggle-button")
     .addEventListener("click", () => {
@@ -23,6 +19,9 @@ export function setModalType(modalType) {
     switch (modalType) {
         case "display-table":
             tableRender();
+            break;
+        case "line-chart-diagram":
+            lineChartRender();
             break;
         case "tfjs-diagrams":
             histogramRender();

@@ -1,3 +1,5 @@
+import { setModalType, toggleModal } from "./modal.js";
+
 export type ItemType = {
   "Programming language": string;
   Version: number;
@@ -3512,9 +3514,16 @@ const initialData: {
 };
 export let system_data: ItemType[] = initialData.data;
 export function updateSystemData(data: ItemType[]) {
+  const element = document.getElementsByClassName("djs-overlay")[0];
+  element.addEventListener("click", (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    toggleModal(true);
+    setModalType("display-table");
+  });
+
   system_data = data;
 }
 export function getCurrentData(): ItemType[] {
   return [...system_data];
 }
-export default initialData;
