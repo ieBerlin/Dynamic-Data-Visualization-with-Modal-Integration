@@ -15,11 +15,11 @@
 var _a;
 import "./modal.js";
 import { _DMiNer_, DMiNer_error, DMN_type_reference_, Drop_mode, Get_enumeration_from_DMN_InputClause, Get_enumeration_from_DMN_OutputClause, Is_Data, Is_DMN_Context, Is_DMN_Decision, Is_DMN_DecisionTable, Is_DMN_Definitions, Is_DMN_InputData, Is_DMN_LiteralExpression, Name_of_DMN_Decision, Name_of_DMN_InputClause, Name_of_DMN_OutputClause, State_mode, Status_mode, Trace, Type_of_DMN_InputClause, Type_of_DMN_OutputClause, } from "../common/Settings.js";
+import Dataviz from "./Dataviz.js";
 import Decision_maker from "./Decision_maker.js";
 import FEEL from "./FEEL.js";
 import IMICROS_FEEL_interpreter from "./IMICROS_FEEL_interpreter.js";
-import { updateSystemData } from "./initialData.js";
-import { setModalType, toggleModal } from "./modal.js";
+import { getCurrentData, updateSystemData } from "./funcs.js";
 class DMN_diagram {
     static _Clear_listeners(decision_name) {
         if (decision_name) {
@@ -549,24 +549,16 @@ class DMN_diagram {
                             // if (Trace)
                             //     console.assert(dataviz_button !== null, "'dataviz_button !== null', untrue");
                             dataviz_button.onclick = () => {
-                                toggleModal(true);
-                                setModalType("show-data-type-button");
-                                // DMN_diagram._Randomize_data(decision)
-                                //   .then((data) => {
-                                //     decision;
-                                //     Dataviz.Setup(
-                                //       dataviz,
-                                //       data,
-                                //       DMN_diagram.Decisions.get(decision)!.name,
-                                //       DMN_diagram.Decisions.get(decision)!.features,
-                                //       DMN_diagram.Decisions.get(decision)!.types,
-                                //       DMN_diagram.Decisions.get(decision)!.enumerations
-                                //     );
-                                //   })
-                                //   .catch((error) => DMN_diagram._Display_error(error))
-                                //   .finally(() =>
-                                //     sVG_element.dispatchEvent(new Event("click"))
-                                //   );
+                                // toggleModal(true);
+                                // setModalType("show-data-type-button");
+                                _a._Randomize_data(decision)
+                                    .then(() => {
+                                    const data = getCurrentData();
+                                    decision;
+                                    Dataviz.Setup(dataviz, data, _a.Decisions.get(decision).name, _a.Decisions.get(decision).features, _a.Decisions.get(decision).types, _a.Decisions.get(decision).enumerations);
+                                })
+                                    .catch((error) => _a._Display_error(error))
+                                    .finally(() => sVG_element.dispatchEvent(new Event("click")));
                             };
                             const spade = window.document.getElementById("spade");
                             // if (Trace)

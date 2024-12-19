@@ -1,7 +1,8 @@
-a:link, a:visited {
+a:link,
+a:visited {
     border-radius: 50%;
     display: inline-block;
-    background-color: #F2F8F1;
+    background-color: #f2f8f1;
     color: limegreen;
     padding: 10px 20px;
     text-align: center;
@@ -17,11 +18,13 @@ dialog {
 }
 
 dialog::backdrop {
-    background: #F2F8F1;
+    background: #f2f8f1;
     opacity: 50%;
 }
 
-html, body, #LiveDMN {
+html,
+body,
+#LiveDMN {
     font-family: Optima;
     font-size: 100%;
     overflow: hidden;
@@ -79,6 +82,22 @@ p {
     grid-row: 3;
 }
 
+
+/* 
+#version-medal {
+    grid-column: 21;
+    grid-row: 3;
+}
+
+#medal-icon {
+    grid-column: 22;
+    grid-row: 3;
+
+    
+}
+
+} */
+
 #Copyright_ {
     font-size: 2vh;
 }
@@ -87,7 +106,8 @@ p {
     font-size: 5vmin;
 }
 
-#Bug_, #Dataviz_icon {
+#Bug_,
+#Dataviz_icon {
     font-size: 6vmin;
 }
 
@@ -108,7 +128,7 @@ p {
 
 .BlaBlaBla {
     font-size: 3vmin;
-    padding: 5%;
+    padding: 20px;
     text-align: center;
     /* 'blur' est le 3e param. : */
     text-shadow: 0.5px 0px 0px limegreen;

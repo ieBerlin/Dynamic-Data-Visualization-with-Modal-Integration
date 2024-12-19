@@ -10,8 +10,8 @@ declare const DmnJS: any;
 import { Trace } from "../common/Settings.js";
 import Decision_maker from "./Decision_maker.js";
 import DMN_diagram from "./DMN_diagram.js";
-import { getCurrentData } from "./initialData.js";
-import "./xmlData.js"
+import { getCurrentData } from "./funcs.js";
+
 class DMiNer {
   static readonly Disable_drag_and_drop = (): void => {
     // 'preventDefault' in 'dragover' is MANDATORY to later control 'drop':

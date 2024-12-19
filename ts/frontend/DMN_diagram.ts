@@ -54,9 +54,8 @@ import Dataviz from "./Dataviz.js";
 import Decision_maker from "./Decision_maker.js";
 import FEEL from "./FEEL.js";
 import IMICROS_FEEL_interpreter from "./IMICROS_FEEL_interpreter.js";
-import { ItemType, updateSystemData } from "./initialData.js";
-import { setModalType, toggleModal } from "./modal.js";
-
+import { getCurrentData, updateSystemData } from "./funcs.js";
+import { ItemType } from './funcs';
 export default class DMN_diagram {
   private static readonly _Menu =
     "<button id='RANDOMIZE_BUTTON'>&#x0211D;</button><hr><button id='TRAIN_BUTTON'>&#x1D54B;</button><hr><button id='DATAVIZ_BUTTON'>&#x1D54D;</button><hr><button id='spade'>&spades;</button>";
@@ -908,25 +907,25 @@ export default class DMN_diagram {
                 // if (Trace)
                 //     console.assert(dataviz_button !== null, "'dataviz_button !== null', untrue");
                 dataviz_button.onclick = () => {
-                  toggleModal(true);
-                  setModalType("show-data-type-button");
-
-                  // DMN_diagram._Randomize_data(decision)
-                  //   .then((data) => {
-                  //     decision;
-                  //     Dataviz.Setup(
-                  //       dataviz,
-                  //       data,
-                  //       DMN_diagram.Decisions.get(decision)!.name,
-                  //       DMN_diagram.Decisions.get(decision)!.features,
-                  //       DMN_diagram.Decisions.get(decision)!.types,
-                  //       DMN_diagram.Decisions.get(decision)!.enumerations
-                  //     );
-                  //   })
-                  //   .catch((error) => DMN_diagram._Display_error(error))
-                  //   .finally(() =>
-                  //     sVG_element.dispatchEvent(new Event("click"))
-                  //   );
+                  // toggleModal(true);
+                  // setModalType("show-data-type-button");
+                  DMN_diagram._Randomize_data(decision)
+                    .then(() => {
+                      const data = getCurrentData();
+                      decision;
+                      Dataviz.Setup(
+                        dataviz,
+                        data,
+                        DMN_diagram.Decisions.get(decision)!.name,
+                        DMN_diagram.Decisions.get(decision)!.features,
+                        DMN_diagram.Decisions.get(decision)!.types,
+                        DMN_diagram.Decisions.get(decision)!.enumerations
+                      );
+                    })
+                    .catch((error) => DMN_diagram._Display_error(error))
+                    .finally(() =>
+                      sVG_element.dispatchEvent(new Event("click"))
+                    );
                 };
                 const spade: HTMLButtonElement = window.document.getElementById(
                   "spade"

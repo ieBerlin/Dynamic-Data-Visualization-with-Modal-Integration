@@ -5,8 +5,7 @@
 import { Trace } from "../common/Settings.js";
 import Decision_maker from "./Decision_maker.js";
 import DMN_diagram from "./DMN_diagram.js";
-import { getCurrentData } from "./initialData.js";
-import "./xmlData.js";
+import { getCurrentData } from "./funcs.js";
 class DMiNer {
     static Change_screen(screen) {
         // if (Trace)
