@@ -65,3 +65,57 @@ export function createButtonsWrapper(): HTMLDivElement {
 `;
   return buttonsWrapper;
 }
+
+export function sideBarKeysDiv(averages: object[]) {
+  const oldWrapper = document.getElementById("keys-container");
+  if (oldWrapper) {
+    oldWrapper.remove();
+  }
+  const keysDiv = document.createElement("div");
+  keysDiv.style.position = "fixed";
+  keysDiv.style.top = "0";
+  keysDiv.id = "keys-container";
+  keysDiv.style.zIndex = "101";
+  keysDiv.style.left = "0";
+  keysDiv.style.width = "15%";
+  keysDiv.style.height = "100%";
+  keysDiv.style.overflowY = "auto";
+  keysDiv.style.backgroundColor = "#f9f9f9";
+  keysDiv.style.borderRight = "1px solid #ddd";
+
+  keysDiv.innerHTML = `
+      <ul
+        style="
+          display: flex; 
+          flex-direction: column; 
+          gap: 10px; 
+          list-style-type: none; 
+          padding: 15px; 
+          margin: 0; 
+        ">
+        ${averages
+          .map(
+            (item: object, index: number) => `
+            <li style="
+              display: flex; 
+              justify-content: space-between; 
+              align-items: center; 
+              padding: 8px 12px; 
+              border-radius: 5px; 
+              background-color: #ffffff; 
+              border: 1px solid #e0e0e0; 
+              transition: background-color 0.3s ease; 
+              cursor: pointer;
+            " 
+            onmouseover="this.style.backgroundColor='#f0f0f0';" 
+            onmouseout="this.style.backgroundColor='#ffffff';">
+              <span>${index}</span>
+              <span>${item.label}</span>
+            </li>`
+          )
+          .join("")}
+      </ul>
+    `;
+
+  document.body.appendChild(keysDiv);
+}

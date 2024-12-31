@@ -75,9 +75,8 @@
         background-color: #45a049;
     }
     
-    canvas {
-        width: 100%;
-        height: 100%;
+    #Dataviz_area canvas {
+        max-width: 70%;
     }
 </style>
 
@@ -191,11 +190,11 @@
             </p>
         </div>
         <style>
-            #Dataviz_area canvas {
+            /* #Dataviz_area canvas {
                 z-index: 10000;
-                /* position: relative; */
+                position: relative;
                 border: black 1px solid;
-            }
+            } */
         </style>
         <div class="BlaBlaBla Screen" id="Dataviz_area">
             <button id="main-modal-toggle-button" style="position: fixed; top: 2%; left: 1%; outline: none; z-index: 10000; padding: 0.5rem; border-radius: 9999px; background-color: #3b82f6; display: flex; align-items: center; justify-content: center; transition: background-color 0.2s, transform 0.2s; box-shadow: 0 0 0 2px #60a5fa;"

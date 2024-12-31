@@ -1,13 +1,15 @@
 declare const tfvis: any;
 
 import { DMiNer_error, Trace } from "../common/Settings.js";
-import { createButtonsWrapper } from "./modal-contents.js";
+import { createButtonsWrapper, sideBarKeysDiv } from "./modal-contents.js";
 const mainModalContent = document.getElementById("Dataviz_area")!;
 
 setInterval(() => {
+  const oldWrapper = document.getElementById("keys-container");
   const buttonsContainer = document.getElementById("buttons-container");
   if (mainModalContent && mainModalContent.style.visibility === "hidden") {
     buttonsContainer?.remove();
+    oldWrapper?.remove();
   }
 }, 200);
 function Has_key<T extends Object>(
@@ -160,31 +162,24 @@ export default class Dataviz {
       const max_y = Math.max(
         ...(enumerations.get(features[3]) as Array<number>)
       );
+
       const buttonsWrapper = createButtonsWrapper();
       buttonsWrapper.id = "line-chart-buttons";
-
       mainModalContent.insertAdjacentElement("beforebegin", buttonsWrapper);
 
       const languageButton = document.getElementById("btnLanguage");
       const versionButton = document.getElementById("btnVersion");
       const medalButton = document.getElementById("btnMedal");
 
-      languageButton?.addEventListener("click", () => {
-        // Step 1: Get unique programming languages
-        const labels = [
-          ...new Set(data.map((item) => item["Programming language"])),
-        ];
-
-        // Step 2: Map data to x and y values using Project function
-        const lineProgrammingLanguage = data.map((datum) => {
-          return {
-            ...Project(datum, "x", features[0]), // Assuming "Programming language" is in features[0]
-            ...Project(datum, "y", features[3]), // Assuming "Developer annual salary" is in features[3]
-          };
-        });
-
-        // Step 3: Group by 'x' (Programming language)
-        const groupedData = lineProgrammingLanguage.reduce((acc, item) => {
+      const renderButtonContent = (
+        chartData: Array<Object>,
+        xFeature: string,
+        yFeature: string,
+        xLabel: string,
+        seriesLabel: string,
+        yLabel: string
+      ) => {
+        const groupedData = chartData.reduce((acc, item: any) => {
           if (!acc[item.x]) {
             acc[item.x] = [];
           }
@@ -192,143 +187,89 @@ export default class Dataviz {
           return acc;
         }, {});
 
-        // Step 4: Calculate averages for each programming language
         const averages = Object.keys(groupedData).map((x, index) => {
           const yValues = groupedData[x];
-          const totalY = yValues.reduce((sum, y) => sum + y, 0);
-          const averageY = Math.floor(totalY / yValues.length);
-          return { x: index + 1, y: averageY };
+          const totalY = yValues.reduce((sum: number, y: number) => sum + y, 0);
+          const averageY = totalY / yValues.length;
+          return { x: index + 1, y: averageY, label: x };
         });
-        // Step 5: Prepare data for the chart
+
         const dataForChart = {
           values: [averages],
-          series: ["Programming language"],
+          series: [seriesLabel],
         };
-        // Step 6: Render the chart using tfvis
+
         tfvis.render.linechart(dataviz.dataviz_area, dataForChart, {
           yAxisDomain: [min_y, max_y],
-          xLabel: "Programming language",
+          xLabel: xLabel,
           xType: "ordinal",
-          yLabel: "Annual salary ($ US)",
+          yLabel: yLabel,
           zoomToFit: true,
         });
+
+        if (averages.length) {
+          sideBarKeysDiv(averages);
+        }
+      };
+
+      languageButton?.addEventListener("click", () => {
+        const chartData = data.map((datum) => ({
+          ...Project(datum, "x", features[0]),
+          ...Project(datum, "y", features[3]),
+        }));
+        renderButtonContent(
+          chartData,
+          features[0],
+          features[3],
+          "Programming language",
+          "Programming language",
+          "Annual salary ($ US)"
+        );
       });
 
       versionButton?.addEventListener("click", () => {
-        const line = data.map((datum) => {
-          return {
-            ...Project(datum, "x", features[1]),
-            ...Project(datum, "y", features[3]),
-          };
-        });
-
-        const groupedAverages = line.reduce((acc, item) => {
-          // If the x value doesn't exist in the accumulator, initialize an empty array
-          if (!acc[item.x]) {
-            acc[item.x] = { totalY: 0, count: 0 };
-          }
-          // Add the y value to the total and increment the count
-          acc[item.x].totalY += item.y;
-          acc[item.x].count++;
-
-          return acc;
-        }, {});
-
-        // Step 3: Calculate the average for each group
-        const averages = Object.keys(groupedAverages).map((x) => {
-          const { totalY, count } = groupedAverages[x];
-          return { x: parseInt(x), y: totalY / count }; // Calculate average
-        });
-        const dataForChart = { values: [averages], series: [name] };
-        tfvis.render.linechart(dataviz.dataviz_area, dataForChart, {
-          yAxisDomain: [min_y, max_y],
-          xLabel: "Version",
-          xType: "ordinal",
-          yLabel: "Average salary ($ US)",
-          zoomToFit: true,
-        });
+        const chartData = data.map((datum) => ({
+          ...Project(datum, "x", features[1]),
+          ...Project(datum, "y", features[3]),
+        }));
+        renderButtonContent(
+          chartData,
+          features[1],
+          features[3],
+          "Version",
+          "Version",
+          "Average salary ($ US)"
+        );
       });
 
       medalButton?.addEventListener("click", () => {
-        const lineProgrammingLanguage = data.map((datum) => {
-          return {
-            ...Project(datum, "x", features[2]), // Assuming "Programming language" is in features[0]
-            ...Project(datum, "y", features[3]), // Assuming "Developer annual salary" is in features[3]
-          };
-        });
-
-        // Step 3: Group by 'x' (Programming language)
-        const groupedData = lineProgrammingLanguage.reduce((acc, item) => {
-          if (!acc[item.x]) {
-            acc[item.x] = [];
-          }
-          acc[item.x].push(item.y);
-          return acc;
-        }, {});
-
-        // Step 4: Calculate averages for each programming language
-        const averages = Object.keys(groupedData).map((x, index) => {
-          const yValues = groupedData[x];
-          const totalY = yValues.reduce((sum, y) => sum + y, 0);
-          const averageY = totalY / yValues.length;
-          return { x: index + 1, y: averageY };
-        });
-        // Step 5: Prepare data for the chart
-        const dataForChart = {
-          values: [averages],
-          series: ["Developer medal"],
-        };
-        tfvis.render.linechart(dataviz.dataviz_area, dataForChart, {
-          yAxisDomain: [min_y, max_y],
-          xLabel: "Developer medal",
-          xType: "ordinal",
-          yLabel: "Annual salary ($ US)",
-          zoomToFit: true,
-        });
+        const chartData = data.map((datum) => ({
+          ...Project(datum, "x", features[2]),
+          ...Project(datum, "y", features[3]),
+        }));
+        renderButtonContent(
+          chartData,
+          features[2],
+          features[3],
+          "Developer medal",
+          "Developer medal",
+          "Annual salary ($ US)"
+        );
       });
 
-      // Step 1: Get unique programming languages
-      const labels = [
-        ...new Set(data.map((item) => item["Programming language"])),
-      ];
-
-      // Step 2: Map data to x and y values using Project function
-      const lineProgrammingLanguage = data.map((datum) => {
-        return {
-          ...Project(datum, "x", features[0]), // Assuming "Programming language" is in features[0]
-          ...Project(datum, "y", features[3]), // Assuming "Developer annual salary" is in features[3]
-        };
-      });
-
-      // Step 3: Group by 'x' (Programming language)
-      const groupedData = lineProgrammingLanguage.reduce((acc, item) => {
-        if (!acc[item.x]) {
-          acc[item.x] = [];
-        }
-        acc[item.x].push(item.y);
-        return acc;
-      }, {});
-
-      // Step 4: Calculate averages for each programming language
-      const averages = Object.keys(groupedData).map((x, index) => {
-        const yValues = groupedData[x];
-        const totalY = yValues.reduce((sum, y) => sum + y, 0);
-        const averageY = Math.floor(totalY / yValues.length);
-        return { x: index + 1, y: averageY };
-      });
-      // Step 5: Prepare data for the chart
-      const dataForChart = {
-        values: [averages],
-        series: ["Programming language"],
-      };
-      // Step 6: Render the chart using tfvis
-      tfvis.render.linechart(dataviz.dataviz_area, dataForChart, {
-        yAxisDomain: [min_y, max_y],
-        xLabel: "Programming language",
-        xType: "ordinal",
-        yLabel: "Annual salary ($ US)",
-        zoomToFit: true,
-      });
+      // Initial chart rendering
+      const chartData = data.map((datum) => ({
+        ...Project(datum, "x", features[0]),
+        ...Project(datum, "y", features[3]),
+      }));
+      renderButtonContent(
+        chartData,
+        features[0],
+        features[3],
+        "Programming language",
+        "Programming language",
+        "Annual salary ($ US)"
+      );
     } catch (error: unknown) {
       throw new Error(DMiNer_error.No_possible_visualization);
     }
@@ -360,106 +301,66 @@ export default class Dataviz {
       const versionButton = document.getElementById("btnVersion");
       const medalButton = document.getElementById("btnMedal");
 
-      languageButton?.addEventListener("click", () => {
+      const renderChart = (
+        groupByKey: string,
+        xLabel: string,
+        seriesLabel: string
+      ) => {
         const groupedData = data.reduce((acc, datum) => {
-          const medal = datum["Programming language"];
-          const salary = datum[features[3]]; // Developer annual salary
-          if (!acc[medal]) {
-            acc[medal] = [];
+          const key = datum[groupByKey];
+          const value = datum[features[3]];
+          if (!acc[key]) {
+            acc[key] = [];
           }
-          acc[medal].push(salary);
+          acc[key].push(value);
           return acc;
         }, {} as Record<string, number[]>);
+
         const expectedData = Object.entries(groupedData);
         const dataForChart = {
           values: expectedData.map((data, index) => ({
+            label: data[0],
             index: index + 1,
             value:
               data[1].reduce((sum, value) => sum + value, 0) / data[1].length,
           })),
-          series: ["Version"],
+          series: [seriesLabel],
         };
+
         tfvis.render.barchart(dataviz.dataviz_area, dataForChart.values, {
-          xLabel: "Programming language",
+          xLabel: xLabel,
           yLabel: "Annual salary ($ US)",
           height: 600,
           width: 800,
           zoomToFit: true,
         });
+
+        if (dataForChart.values.length) {
+          sideBarKeysDiv(dataForChart.values);
+        }
+      };
+
+      languageButton?.addEventListener("click", () => {
+        renderChart(
+          "Programming language",
+          "Programming language",
+          "Programming language"
+        );
       });
 
       versionButton?.addEventListener("click", () => {
-        const groupedData = data.reduce((acc, datum) => {
-          const medal = datum["Version"];
-          const salary = datum[features[3]]; // Developer annual salary
-          if (!acc[medal]) {
-            acc[medal] = [];
-          }
-          acc[medal].push(salary);
-          return acc;
-        }, {} as Record<string, number[]>);
-        const expectedData = Object.entries(groupedData);
-        const dataForChart = {
-          values: expectedData.map((data, index) => ({
-            index: index + 1,
-            value:
-              data[1].reduce((sum, value) => sum + value, 0) / data[1].length,
-          })),
-          series: ["Version"],
-        };
-        tfvis.render.barchart(dataviz.dataviz_area, dataForChart.values, {
-          xLabel: "Version",
-          yLabel: "Annual salary ($ US)",
-          height: 600,
-          width: 800,
-          zoomToFit: true,
-        });
+        renderChart("Version", "Version", "Version");
       });
 
       medalButton?.addEventListener("click", () => {
-        const labels = [
-          ...new Set(data.map((item) => item["Developer medal"])),
-        ];
-
-        const groupedData = data.reduce((acc, datum) => {
-          const medal = datum["Developer medal"];
-          const salary = datum[features[3]]; // Developer annual salary
-          if (!acc[medal]) {
-            acc[medal] = [];
-          }
-          acc[medal].push(salary);
-          return acc;
-        }, {} as Record<string, number[]>);
-        const expectedData = Object.entries(groupedData);
-
-        const dataForChart = {
-          values: expectedData.map((data, index) => ({
-            index: index + 1,
-            value:
-              data[1].reduce((sum, value) => sum + value, 0) / data[1].length,
-          })),
-          series: ["Developer medal"],
-        };
-        tfvis.render.barchart(dataviz.dataviz_area, dataForChart.values, {
-          xLabel: "Developer medal",
-          yLabel: "Annual salary ($ US)",
-          height: 600,
-          width: 800,
-          zoomToFit: true,
-        });
+        renderChart("Developer medal", "Developer medal", "Developer medal");
       });
 
-      tfvis.render.barchart(
-        dataviz.dataviz_area,
-        {
-          values: [{ index: "Data", y: [] }],
-          series: [name],
-        },
-        {
-          xLabel: features[1],
-          yLabel: "Annual salary ($ US)",
-          zoomToFit: true,
-        }
+      // Initial chart render
+      renderChart(
+        "Programming language",
+        "Programming language",
+        "Programming language"
       );
     } catch (error: unknown) {
       throw new Error(DMiNer_error.No_possible_visualization);

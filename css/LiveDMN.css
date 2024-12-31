@@ -128,7 +128,6 @@ p {
 
 .BlaBlaBla {
     font-size: 3vmin;
-    padding: 20px;
     text-align: center;
     /* 'blur' est le 3e param. : */
     text-shadow: 0.5px 0px 0px limegreen;
